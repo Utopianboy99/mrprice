@@ -1,0 +1,83 @@
+(function () {
+    // Add-ons
+    
+    
+    // Tags
+    
+    // Image tags
+    
+    // Scripts
+    window.addEventListener('load', function scripts() {
+            },false);
+
+    function fetchCTParamsValues(srcString) {
+        var pattern = new RegExp(/\{(.*?)\/(.*?)\}/g);
+        while (match = pattern.exec(srcString)) {
+            var result = getCTParamValue(match);
+            srcString = srcString.replace(match[0], "'" + result + "'");
+            pattern.lastIndex = 0;
+        }
+        return srcString;
+    }
+
+    function getCTParamValue(match){
+        var type = match[1];
+        var val = match[2];
+        switch(type) {
+            case 'var':
+                return window[val];
+            case 'cookie':
+                return getCookie(val);
+            case 'el':
+                var el = document.getElementById(val);
+                return el.value;
+            case 'rand_num':
+                return Math.floor((Math.random() * 1000) + 1);
+            case 'rand_str':
+                var text = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                for( var i=0; i < 5; i++ ) {
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                return text;
+            case 'url_host':
+                return window.location.hostname;
+            case 'url_full':
+                return encodeURIComponent(document.location.href);
+            case 'TCPixel':
+                return getTCPixelParam(val);
+        }
+    }
+
+    function getTCPixelParam(val) {
+        var imgs = Array.prototype.slice.apply(document.getElementsByTagName('img')),
+            pixel = null;
+        for (var i = 0; i < imgs.length; i++) {
+            if (imgs[i].src.indexOf('p.trackmytarget.com') !== -1) {
+                pixel = imgs[i];
+            }
+        }
+
+        if (pixel !== null) {
+            var qs = pixel.src.substring(pixel.src.indexOf('?')+1).split('&');
+            var params = {}, pair, d = decodeURIComponent;
+
+            for (var i = qs.length - 1; i >= 0; i--) {
+                pair = qs[i].split('=');
+                params[d(pair[0])] = d(pair[1]);
+            }
+            return params[val];
+        }
+        return null;
+    }
+
+    function getCookie(name){
+        var pattern = RegExp(name + "=.[^;]*");
+        matched = document.cookie.match(pattern);
+        if(matched){
+            var cookie = matched[0].split('=');
+            return cookie[1];
+        }
+        return false;
+    }
+})();
